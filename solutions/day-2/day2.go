@@ -47,18 +47,15 @@ func isToleratedReportSafe(report []int) bool {
 func main() {
 	input := aocutils.GetRawInput()
 	inputRows := strings.Split(input, "\n")
-	reports := make([][]int, len(inputRows))
 	p1, p2 := 0, 0
 
-	for i, row := range inputRows {
+	for _, row := range inputRows {
 		nums := strings.Split(row, " ")
-		length := len(nums)
-		reports[i] = make([]int, length)
+		report := make([]int, len(nums))
 		for j, str := range nums {
-			reports[i][j] = aocutils.Stoi(str)
+			report[j] = aocutils.Stoi(str)
 		}
 
-		report := reports[i]
 		if isReportSafe(report, -1) {
 			p1++
 			p2++
