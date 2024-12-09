@@ -8,33 +8,31 @@ import (
 )
 
 type Block struct {
-	id     int
-	data   []int
-	remain int
+	id   int
+	data []int
+	size int
 }
 
 func logDisk(disk []*Block) {
 	for _, block := range disk {
-		fmt.Println("id:", block.id, "data:", block.data, "remain:", block.remain)
+		fmt.Println("id:", block.id, "data:", block.data, "size:", block.size)
 	}
 }
 
-func main() {
-	input := aocutils.GetRawInput()
-	disk := []*Block{}
+func checksum(disk []*Block) int {
+	checksum, pos := 0, 0
 
-	for i, id := 0, 0; i < len(input); i += 2 {
-		data := slices.Repeat([]int{id}, aocutils.Stoi(string(input[i])))
-		remain := 0
-
-		if i < len(input)-1 {
-			remain = aocutils.Stoi(string(input[i+1]))
+	for _, block := range disk {
+		for _, id := range block.data {
+			checksum += id * pos
+			pos++
 		}
-
-		disk = append(disk, &Block{id: id, data: data, remain: remain})
-		id++
 	}
 
+	return checksum
+}
+
+func fragment(disk []*Block) int {
 	earlistGap := 0
 	for disk[earlistGap].id < disk[len(disk)-1].id {
 		lastBlock := disk[len(disk)-1]
@@ -42,17 +40,15 @@ func main() {
 
 		for len(data) > 0 && disk[earlistGap].id < lastBlock.id {
 			block := disk[earlistGap]
-			n := min(block.remain, len(data))
+			n := min(block.size-len(block.data), len(data))
 
 			for i := 0; i < n; i++ {
 				block.data = append(block.data, data[len(data)-1])
 				lastBlock.data = data[:len(data)-1]
-				lastBlock.remain++
-				block.remain--
 				data = lastBlock.data
 			}
 
-			if block.remain == 0 {
+			if block.size-len(block.data) == 0 {
 				earlistGap++
 			}
 
@@ -62,13 +58,33 @@ func main() {
 		}
 	}
 
-	checksum, pos := 0, 0
-	for _, block := range disk {
-		for _, id := range block.data {
-			checksum += id * pos
-			pos++
+	return checksum(disk)
+}
+
+func defragment(disk []*Block) int {
+	index := len(disk) - 1
+
+	return checksum(disk)
+}
+
+func main() {
+	input := aocutils.GetRawInput()
+	d1 := []*Block{}
+
+	for i, id := 0, 0; i < len(input); i += 2 {
+		data := slices.Repeat([]int{id}, aocutils.Stoi(string(input[i])))
+		size := len(data)
+
+		if i < len(input)-1 {
+			size += aocutils.Stoi(string(input[i+1]))
 		}
+
+		d1 = append(d1, &Block{id, data, size})
+		id++
 	}
 
-	fmt.Println(checksum)
+	d2 := make([]*Block, len(d1))
+	copy(d2, d1)
+	p1, p2 := fragment(d1), defragment(d2)
+	fmt.Println(p1, p2)
 }
