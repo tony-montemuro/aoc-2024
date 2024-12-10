@@ -102,6 +102,10 @@ func (g *Grid) UpdateDataAt(x, y int, newByte byte) {
 	g.Data[y] = UpdateCharAt(g.Data[y], rune(newByte), x)
 }
 
+func (g *Grid) GetValue() string {
+	return string(g.Data[g.Position.Y][g.Position.X])
+}
+
 func (g *Grid) LookUp() string {
 	movedX, movedY := g.getMovedCoordinates(North)
 	return string(g.Data[movedY][movedX])
