@@ -20,13 +20,14 @@ type Point struct {
 }
 
 type Grid struct {
-	Data                []string
-	Position            Point
-	Direction           Direction
-	Width               int
-	Height              int
-	horizontalOobLength int
-	verticalOobLength   int
+	Data               []string
+	Position           Point
+	Direction          Direction
+	Width              int
+	Height             int
+	StartX             int
+	StartY             int
+	PaddingTraversable bool
 }
 
 func NewGrid(horizontal, vertical int, direction Direction, grid []string) *Grid {
@@ -45,13 +46,14 @@ func NewGrid(horizontal, vertical int, direction Direction, grid []string) *Grid
 	}
 
 	return &Grid{
-		Data:                paddedGrid,
-		Direction:           direction,
-		Position:            Point{horizontal, vertical},
-		Width:               width,
-		Height:              height,
-		horizontalOobLength: horizontal,
-		verticalOobLength:   vertical,
+		Data:               paddedGrid,
+		Direction:          direction,
+		Position:           Point{horizontal, vertical},
+		Width:              width,
+		Height:             height,
+		StartX:             horizontal,
+		StartY:             vertical,
+		PaddingTraversable: false,
 	}
 }
 
@@ -84,10 +86,15 @@ func (g *Grid) move(direction Direction) error {
 }
 
 func (g *Grid) isInGrid(x, y int) bool {
-	return x >= g.horizontalOobLength &&
-		x < len(g.Data[x])-g.horizontalOobLength &&
-		y >= g.verticalOobLength &&
-		y < len(g.Data)-g.verticalOobLength
+	startX, startY := g.StartX, g.StartY
+	if g.PaddingTraversable {
+		startX, startY = 0, 0
+	}
+
+	return x >= startX &&
+		x < len(g.Data[x])-startX &&
+		y >= startY &&
+		y < len(g.Data)-startY
 }
 
 func (g *Grid) pointToInt(p Point) int {
@@ -173,10 +180,11 @@ func (g *Grid) RotateRight(n int) {
 
 func (g *Grid) RotateLeft(n int) {
 	directionCount := int(West) + 1
-	transformedDirection := (int(g.Direction) - n) % directionCount
+	transformedDirection := int(g.Direction) - n
 	if transformedDirection < 0 {
-		transformedDirection += n
+		transformedDirection += directionCount
 	}
+	transformedDirection = transformedDirection % directionCount
 	g.Direction = Direction(transformedDirection)
 }
 
