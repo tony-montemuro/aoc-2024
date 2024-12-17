@@ -6,3 +6,16 @@ func AbsInt(n int) int {
 	}
 	return n
 }
+
+func Modulo(n int, m int) int {
+	dividend := n
+
+	if dividend < 0 {
+		for dividend < 0 {
+			dividend += m
+		}
+		return dividend
+	}
+
+	return dividend % m
+}
